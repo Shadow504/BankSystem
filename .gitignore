@@ -1,0 +1,5 @@
+/.apt_generated
+/.apt_generated_tests
+/out
+/sqltools_20221016113742_7104.log
+/target
