@@ -9,15 +9,18 @@ import javax.sql.rowset.RowSetProvider;
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
 
 import bank.BankDataConnection;
+import bank.account.AccountDAO;
 import bank.client.ClientClass;
 import shared.Shared;
  
-//TODO: Get rid of client id in params
+//* THIS CLASS HANDLES THE INPUTS ONLY, NOT THE ACTUAL LOGIN / SIGNIN */
 class LoginImpl {
     ClientClass client;
+    AccountDAO accountDAO;
 
-    LoginImpl(ClientClass client) {
+    LoginImpl(ClientClass client, AccountDAO accountDAO) {
         this.client = client;
+        this.accountDAO = accountDAO;
     }
 
     static Scanner input = Shared.input;

@@ -1,10 +1,10 @@
 package bank.client;
 
-import java.sql.ResultSet;
+import java.util.Map;
 import java.util.Scanner;
 
 import bank.account.AccountController;
-import bank.account.AccountQueries;
+import bank.account.BankAccount;
 
 public class ClientConsole {
     static Scanner input = new Scanner(System.in);
@@ -24,9 +24,15 @@ public class ClientConsole {
             "=====================================");
     }
 
+    //* Used to get a name to create / log into clients */
+    public static void startClientLoginConsole() {
+        System.out.println("Getting your information:");
+        System.out.println("Enter your name:");
+    }
+
     public static void beginDefaultClientConsole(ClientClass client) {
         try {
-            AccountController currController = client.accountController;
+            AccountController currController = client.getAccountController();
             
             printClientConsole(client.id);
 
@@ -36,12 +42,12 @@ public class ClientConsole {
             while ((choice = input.nextLine()) != null) {
                 switch (choice) {
                     case "1":
-                        ResultSet rs = AccountQueries.getAccountsForClient(client.id);
-    
+                        Map<Integer, BankAccount> accountList = client.getAccountList();
+                        
                         System.out.println("Account list:");
-    
-                        while (rs.next()) {
-                            System.out.println("Name: " + rs.getString("name") + ", Balance: " + rs.getString("balance"));
+
+                        for (BankAccount account : accountList.values()) {
+                            System.out.println("Name: " + account.accountName + ", Balance: " + account.balance);
                         }
     
                         Thread.sleep(2000);
@@ -50,15 +56,15 @@ public class ClientConsole {
     
                         break;
                     case "2":
-                        //*Need to re-print the client console as the log / sign in are a different console */
-                        currController.createAccount(client.id);
+                        //*Need to re-print the client console as the account console yields (Input.nextLine()) */
+                        currController.createAccount();
     
                         printClientConsole(client.id);
                         break;
                     case "3":
                         logInAccountOptions(currController);
     
-                        ClientConsole.printClientConsole(client.id);
+                        printClientConsole(client.id);
                         break;
 
                     case "4":

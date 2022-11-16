@@ -2,15 +2,15 @@ package bank.account.console;
 
 import java.sql.SQLException;
 
-import bank.account.AccountQueries;
+import bank.account.AccountDAO;
 import bank.client.ClientClass;
 
 
-//* Handle all of the account inputs */
+//* Handle all of the account inputs and get the existing account's id*/
 public class LoginClass extends LoginImpl {
 
-    LoginClass(ClientClass client) {
-        super(client);
+    LoginClass(ClientClass client, AccountDAO accountDAO) {
+        super(client, accountDAO);
     }
 
     private String login() throws SQLException {
@@ -41,6 +41,6 @@ public class LoginClass extends LoginImpl {
 
         System.out.println("Logged in account as: " + name );
 
-        return AccountQueries.getAccountId(name, client.id);
+        return accountDAO.getAccountId(name, client.id);
     }
 }

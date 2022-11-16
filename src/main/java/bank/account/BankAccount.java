@@ -6,17 +6,8 @@ import bank.Bank;
 import bank.BankDataConnection;
 import bank.Transactions;
 
-public class BankAccount {
-
-
-    static MysqlConnectionPoolDataSource ds = BankDataConnection.ds;
-
-    static String updateBalance = "UPDATE accounts SET balance = ? WHERE id = ?";
-
-    private void updateBalanceInDatabase() {
-        AccountQueries.updateAnAccountBalance(this.id, this.balance);
-    }
-
+//TODO: should we decompose the params in the BankAccouhnt constructor into this class or not ?
+class AccountDetails {
     public int balance;
     public int clientId;
 
@@ -25,13 +16,42 @@ public class BankAccount {
 
     private String accountPassword;
 
-    public BankAccount(int id, int client_id, String accountName, String accountPassword, int balance) {
+    AccountDetails(int id, int client_id, String accountName, String accountPassword, int balance) {
         this.accountName = accountName;
         this.accountPassword = accountPassword;
 
         this.clientId = client_id;
         this.id = id;
         this.balance = balance;
+    }
+}
+
+public class BankAccount {
+
+    static MysqlConnectionPoolDataSource ds = BankDataConnection.ds;
+
+    static String updateBalance = "UPDATE accounts SET balance = ? WHERE id = ?";
+
+    private void updateBalanceInDatabase() {
+        accountDAO.updateAnAccountBalance(this.id, this.balance);
+    }
+
+    public int balance;
+    public int clientId;
+
+    public int id;
+    public String accountName; 
+
+    AccountDAO accountDAO;
+
+    public BankAccount(AccountDAO accountDAO, int id, int client_id, String accountName, String accountPassword, int balance) {
+        this.accountName = accountName;
+
+        this.clientId = client_id;
+        this.id = id;
+        this.balance = balance;
+
+        this.accountDAO = accountDAO;
     }
 
     //* Should be thread-safe, thwart running conditions */
@@ -94,7 +114,7 @@ public class BankAccount {
 
         this.incrementbalance(-amount);
 
-        AccountQueries.updateAnAccountBalance(toAccountID, amount);
+        accountDAO.updateAnAccountBalance(toAccountID, amount);
 
         Transactions.logTransfer(this.id, toAccountID, amount);
     }

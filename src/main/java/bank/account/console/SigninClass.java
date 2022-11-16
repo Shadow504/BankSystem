@@ -2,15 +2,15 @@ package bank.account.console;
 
 import java.sql.SQLException;
 
-import bank.account.AccountQueries;
+import bank.account.AccountDAO;
 import bank.client.ClientClass;
 
 
-//* Handle all of the account inputs */
+//* Handle all of the account inputs and get the future account name and password*/
 public class SigninClass extends LoginImpl {
 
-    SigninClass(ClientClass client) {
-        super(client);
+    SigninClass(ClientClass client, AccountDAO accountDAO) {
+        super(client, accountDAO);
     }
 
     private String[] signin() throws SQLException {
@@ -47,7 +47,7 @@ public class SigninClass extends LoginImpl {
         return userTbl;
     }
     
-    public int beginSigninSession() throws SQLException {
+    public String[] beginSigninSession() throws SQLException {
         System.out.println("Now signing in: ");
     
         String[] userTbl = signin();
@@ -57,8 +57,6 @@ public class SigninClass extends LoginImpl {
     
         System.out.println("New user created: " + name + " " + password);
     
-        AccountQueries.insertAccount(client.id, name, password);
-    
-        return AccountQueries.getLastInsertedId(name, password);
+        return userTbl;
     }
 }

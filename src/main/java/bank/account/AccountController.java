@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sql.rowset.CachedRowSet;
-
 import bank.account.console.AccountConsole;
 import bank.client.ClientClass;
 
@@ -18,18 +16,21 @@ public class AccountController {
     public BankAccount currentAccount = null;
     public ClientClass currentClient;
 
-    AccountConsole currConsole;
+    public AccountConsole currConsole;
 
-    public AccountController(ClientClass currentClient) {
+    AccountDAO accountDAO;
+
+    public AccountController(ClientClass currentClient, AccountDAO accountDAO) {
         this.currentClient = currentClient;
+        this.accountDAO = accountDAO;
 
-        currConsole = new AccountConsole(currentClient);
+        currConsole = new AccountConsole(currentClient, accountDAO);
     }
 
-    public void populateAccountList(ClientClass client) {
+    public void populateAccountList() {
         try {
             
-            ResultSet rs = AccountQueries.getAccountsForClient(client.id);
+            ResultSet rs = accountDAO.getAccountsForClient(currentClient.id);
 
             while (rs.next()) {
 
@@ -39,10 +40,9 @@ public class AccountController {
                 int balance = rs.getInt("balance");
                 int accountId = rs.getInt("id");
 
-                BankAccount account = new BankAccount(accountId, client.id, name, password, balance);
+                BankAccount account = new BankAccount(accountDAO, accountId, currentClient.id, name, password, balance);
 
                 accountList.put(accountId, account);
-    
             }
 
             rs.close();
@@ -52,29 +52,35 @@ public class AccountController {
 
     }
 
-    public void createAccount(int client_id) {
+    public BankAccount createAccount() {
         try { 
+            // Retrieve the inputed names and password
+            String[] userAndPass = currConsole.beginSigninSession();
+            // Insert the account into the database, and get its id
 
-            int account_id = currConsole.beginSigninSession();
-        
-            CachedRowSet accountRow = AccountQueries.getNameAndPassWordFromId(account_id);
+            String name = userAndPass[0];
+            String password = userAndPass[1];
 
-            String name = accountRow.getString("name");
-            String password  = accountRow.getString("password");
+            System.out.println(currentClient.id);
+            int account_id  = accountDAO.insertAccount(currentClient.id, userAndPass[0], userAndPass[1]);
 
-            BankAccount account = new BankAccount(account_id, client_id, name, password, 0);
+            BankAccount account = new BankAccount(accountDAO, account_id, currentClient.id, name, password, 0);
 
-            accountList.put(AccountQueries.getLastInsertedId(name, password), account);
+            accountList.put(account_id, account);
 
             currentAccount = account;
 
-            AccountQueries.updateRecentLoggedInAccount(client_id, account_id);
+            accountDAO.updateRecentLoggedInAccount(currentClient.id, account_id);
 
             currConsole.beginAccountActions();
+
+            return account;
  
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
     public void logIntoNewAccount() {
@@ -84,24 +90,24 @@ public class AccountController {
 
             currentAccount = accountList.get(accountId);
 
-            AccountQueries.updateRecentLoggedInAccount(currentClient.id, accountId);
+            accountDAO.updateRecentLoggedInAccount(currentClient.id, accountId);
 
             currConsole.beginAccountActions();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public  void logIntoRecentAccount() {
+    public void logIntoRecentAccount() {
         try {
 
-            int recent_account_id = AccountQueries.getRecentLoggedInAccount(currentClient.id);
+            int recent_account_id = accountDAO.getRecentLoggedInAccount(currentClient.id);
 
             currentAccount = accountList.get(recent_account_id);
 
             currConsole.beginAccountActions();
 
-            System.out.println(currentClient.accountController.currentAccount);
         } catch (Exception e) {
             e.printStackTrace();
         }

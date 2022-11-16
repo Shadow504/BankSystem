@@ -1,9 +1,8 @@
 package bank.account.console;
 
 import java.util.Scanner;
-import bank.account.AccountQueries;
+import bank.account.AccountDAO;
 import bank.client.ClientClass;
-import bank.client.ClientQueries;
 import shared.Shared;
 
 //* This class handles the console's actions when inputed */
@@ -11,11 +10,13 @@ public class ConsoleActions {
 
     Scanner input = Shared.input;
 
-    ClientClass client;
+    private ClientClass client;
+    private AccountDAO accountDAO;
 
     //* Each controller should hold a console action class  */
-    public ConsoleActions(ClientClass client) {
+    public ConsoleActions(ClientClass client, AccountDAO accountDAO) {
         this.client = client;
+        this.accountDAO = accountDAO;
     }
 
     //* Make a wrapper to handle the shared snippet */
@@ -25,7 +26,7 @@ public class ConsoleActions {
 
         Thread.sleep(2000);
         
-        AccountConsole.printAccountConsole(client.accountController.currentAccount);
+        AccountConsole.printAccountConsole(client.getCurrentAccount());
     }
 
     public void beginDepositing() throws InterruptedException {
@@ -35,8 +36,8 @@ public class ConsoleActions {
     
             int DepositAmount = Integer.parseInt(input.nextLine());
     
-            if (client.accountController.currentAccount.deposit(DepositAmount)) {
-                System.out.println("Deposited Successfully, account balance is now: " + client.accountController.currentAccount.balance);
+            if (client.getCurrentAccount().deposit(DepositAmount)) {
+                System.out.println("Deposited Successfully, account balance is now: " + client.getCurrentAccount().balance);
             }
         });
 
@@ -48,8 +49,8 @@ public class ConsoleActions {
     
             int withdrawAmount = Integer.parseInt(input.nextLine());
     
-            if (client.accountController.currentAccount.withdraw(withdrawAmount)) {
-                System.out.println("Withdrew Successfully, account balance is now: " + client.accountController.currentAccount.balance); 
+            if (client.getCurrentAccount().withdraw(withdrawAmount)) {
+                System.out.println("Withdrew Successfully, account balance is now: " + client.getCurrentAccount().balance); 
             }
         });
     }
@@ -69,7 +70,7 @@ public class ConsoleActions {
     private void checkAndTransfer(int targetId, int transferAmount) {
         if (targetId > 0) {
                     
-            client.accountController.currentAccount.transfer(targetId, transferAmount);
+            client.getCurrentAccount().transfer(targetId, transferAmount);
 
             System.out.println("Transfered successfully!");
             return;
@@ -83,9 +84,9 @@ public class ConsoleActions {
         consoleWrapper((Runnable) () -> {
             try {
                 System.out.println("Enter a client's name: ");
-                int clientTargetId = ClientQueries.getClientIdWithName(input.nextLine());
+                int clientTargetId = client.getClientDAO().getClientIdWithName(input.nextLine());
 
-                int accountTargetId = AccountQueries.getAccountId(getTargetToTransfer(), clientTargetId);
+                int accountTargetId = accountDAO.getAccountId(getTargetToTransfer(), clientTargetId);
 
                 int transferAmount = getAmountToTransfer();
 
@@ -108,7 +109,7 @@ public class ConsoleActions {
 
                 int transferAmount = getAmountToTransfer();
 
-                int targetId = AccountQueries.getAccountId(targetName, client.accountController.currentClient.id);
+                int targetId = accountDAO.getAccountId(targetName, client.id);
 
                 checkAndTransfer(targetId, transferAmount);
             } catch (Exception e) {

@@ -10,8 +10,7 @@ import  com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
 import bank.BankDataConnection;
 
 //* Store and handle SHARED querries for the accounts */
-public class AccountQueries {
-    private AccountQueries() {}
+public class AccountDAO {
 
     private static MysqlConnectionPoolDataSource ds = BankDataConnection.ds;
 
@@ -35,7 +34,7 @@ public class AccountQueries {
 
     private static String getAccountId = "SELECT id FROM accounts WHERE account_name = ? AND client_id = ?";
 
-    public static int getAccountId(String name, int client_id) throws SQLException {
+    public int getAccountId(String name, int client_id) throws SQLException {
         crs.setCommand(getAccountId);
         crs.setString(1, name);
         crs.setInt(2, client_id);
@@ -48,7 +47,7 @@ public class AccountQueries {
     
     private  static String getAccountIdLastInserted = "SELECT MAX(id) AS 'lastInsertedID' FROM accounts";
 
-    public static int getLastInsertedId(String name, String password) throws SQLException {
+    public  int getLastInsertedId(String name, String password) throws SQLException {
         crs.setCommand(getAccountIdLastInserted);
         crs.setString(1, name);
         crs.setString(2, password);
@@ -61,7 +60,7 @@ public class AccountQueries {
 
     private  static String getNameAndPasswordOnId = "SELECT account_name AS name, account_password AS password FROM accounts WHERE id = ?";
 
-    public static CachedRowSet getNameAndPassWordFromId(int account_id) throws SQLException {
+    public  CachedRowSet getNameAndPassWordFromId(int account_id) throws SQLException {
         crs.setCommand(getNameAndPasswordOnId);
         crs.setInt(1, account_id);
 
@@ -72,22 +71,31 @@ public class AccountQueries {
 
     private  static String insertAccountQuery = "INSERT INTO Accounts(client_id, account_name, account_password, balance) VALUES (?, ?, ?, 0)";
 
-    public static void insertAccount(int client_id, String name, String password) throws SQLException {
-        try (PreparedStatement ps = cn.prepareStatement(insertAccountQuery)) {
+    public int insertAccount(int client_id, String name, String password) throws SQLException {
+
+        ResultSet generatedKeys;
+
+        try (PreparedStatement ps = cn.prepareStatement(insertAccountQuery, new String[]{"id"})) {
             ps.setInt(1, client_id);
             ps.setString(2, name);
             ps.setString(3, password);
     
             ps.executeUpdate();
 
+            generatedKeys = ps.getGeneratedKeys();
+
+            return generatedKeys.getInt(1);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return -1;
     }
     private static String returnAccountsForClient = 
     "SELECT id, account_name AS name, account_password AS password, balance FROM accounts WHERE client_id = ?";
 
-    public static ResultSet getAccountsForClient(int client_id) throws SQLException {
+    public  ResultSet getAccountsForClient(int client_id) throws SQLException {
         PreparedStatement ps = null;
 
         try {
@@ -112,7 +120,7 @@ public class AccountQueries {
     private static String getRecentLoggedInAccountQuerry = "SELECT current_logged_in_account_id AS account_id FROM clients WHERE id = ?";
 
     //* Fetch the most recent account that was logged in */
-    public static int getRecentLoggedInAccount(int client_id) {
+    public  int getRecentLoggedInAccount(int client_id) {
 
         try (PreparedStatement newCrs = cn.prepareStatement(getRecentLoggedInAccountQuerry)){
 
@@ -134,9 +142,8 @@ public class AccountQueries {
 
     private static String updateAccountBalanceQuery = "UPDATE accounts SET balance = ? WHERE id = ?";
 
-    public static void updateAnAccountBalance(int accountId, int amount) {
+    public  void updateAnAccountBalance(int accountId, int amount) {
         try (
-            Connection cn = ds.getConnection();
             PreparedStatement ps = cn.prepareStatement(updateAccountBalanceQuery)) {
 
             ps.setInt(1, amount);
@@ -153,7 +160,7 @@ public class AccountQueries {
     private static String updateRecentAccountQuerry = "UPDATE clients SET current_logged_in_account_id = ? WHERE id = ?";
 
     //* Update the current_logged_in_account_id field to the specified account_id*/
-    public static int updateRecentLoggedInAccount(int client_id, int account_id) {
+    public  int updateRecentLoggedInAccount(int client_id, int account_id) {
         try {
             crs.setCommand(updateRecentAccountQuerry);
             crs.setInt(1, account_id);

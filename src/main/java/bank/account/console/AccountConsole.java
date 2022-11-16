@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import bank.Bank;
+import bank.account.AccountDAO;
 import bank.account.BankAccount;
 import bank.client.ClientClass;
 import shared.Shared;
@@ -25,17 +26,17 @@ public class AccountConsole {
     //* Composition instead of inheritance (More flexible) */
     // Does not immediately print as the client can still be logging in
     //* Pass in the AccountController instance and store it as fields are not referenced, but instances are  */
-    public AccountConsole(ClientClass client) {
+    public AccountConsole(ClientClass client, AccountDAO accountDAO) {
 
-        consoleActions = new ConsoleActions(client);
+        consoleActions = new ConsoleActions(client, accountDAO);
 
-        loginClass = new LoginClass(client);
-        signinClass = new SigninClass(client);
+        loginClass = new LoginClass(client, accountDAO);
+        signinClass = new SigninClass(client, accountDAO);
 
         this.client = client;
     }
 
-    public int beginSigninSession() throws SQLException {
+    public String[] beginSigninSession() throws SQLException {
         return signinClass.beginSigninSession();
     }
 
@@ -68,7 +69,7 @@ public class AccountConsole {
     }
 
     public void beginAccountActions() {
-        BankAccount currentAccount = client.accountController.currentAccount;
+        BankAccount currentAccount = client.getCurrentAccount();
 
         if (currentAccount == null) {
             System.out.println("Cannot begin an account actions session as there's no account logged in"); 
@@ -146,7 +147,7 @@ public class AccountConsole {
         }
     }
 
-    public  void beginTransfering() {
+    public void beginTransfering() {
         AccountConsole.printTransferConsole();
 
         String choice;

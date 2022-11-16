@@ -7,36 +7,28 @@ import shared.Shared;
 
 public class ClientCreator {
     
-    static Scanner input = Shared.input;
-
-    private ClientCreator() {}
+    public Scanner input = Shared.input;
 
     boolean exitInput = false;
 
-    private static boolean confirmClientname(String name) throws SQLException {
+    private ClientDAO clientDAO;
 
-        if (!authorizeName(name)) {  return false; }
-
-        //* Create a new client if the client name doesnt exist, log into one if it exists */
-        if (ClientQueries.checkIfClientExist(name)) {
-            System.out.println("Logged into Client: " + name);
-
-            return true;
-        } else {
-            ClientQueries.insertClient(name);
-
-            System.out.println("Created Client: " + name);
-
-            return true;
-        }
+    public ClientCreator(ClientDAO clientDAO) {
+        this.clientDAO = clientDAO;
     }
 
-    private static boolean authorizeName(String name) {
+    private boolean confirmClientname(String name) {
+        if (!authorizeName(name)) {  return false; }
+
+        return true;
+    }
+
+    private boolean authorizeName(String name) {
         return name != null;
     }
 
-    private static String getInfo() throws SQLException {
-
+    private String getInfo() throws SQLException {
+        
         String name = input.nextLine();
 
         if (!confirmClientname(name)) {
@@ -47,12 +39,26 @@ public class ClientCreator {
         return name;
     }
 
-    public static ClientClass beginLoginSession() throws SQLException {
-        System.out.println("Getting your information:");
-        System.out.println("Enter your name:");
+    public ClientClass beginLoginSession() throws SQLException {
+        ClientConsole.startClientLoginConsole();
 
         String name = getInfo();
 
-        return new ClientClass(name, ClientQueries.getClientIdWithName(name));
+        return createClient(name);
+    }
+
+    private ClientClass createClient(String name) throws SQLException {
+
+        //* Create a new client if the client name doesnt exist, log into one if it exists */
+        if (clientDAO.checkIfClientExist(name)) {
+            System.out.println("Logged into Client: " + name);
+
+        } else {
+            clientDAO.insertClient(name);
+
+            System.out.println("Created Client: " + name);
+        }
+
+        return new ClientClass(clientDAO, name, clientDAO.getClientIdWithName(name));
     }
 }
