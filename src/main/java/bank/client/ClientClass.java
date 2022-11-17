@@ -3,33 +3,21 @@ package bank.client;
 import java.util.Map;
 
 import bank.LoanHandler;
-import bank.account.AccountController;
-import bank.account.AccountDAO;
 import bank.account.BankAccount;
+import bank.account.console.AccountController;
 
 public class ClientClass {
     public String name;
     public int id;
     
+    //! Dependency circulation
+    //* Not fixable due to our structure (Has A relation)  */
+    //* Other classes also uses the Client as an object reference (Client has an AccountController and a loanHandler) */
     private AccountController accountController;
 
     public LoanHandler loanHandler;
 
     public ClientDAO clientDAO;
-
-    //* Dependency injection */
-    public ClientClass(AccountController AC, LoanHandler loanHandler ,ClientDAO clientDAO, String name, int id) {
-        this.name = name;
-        this.id = id;
-
-        this.accountController = AC;
-
-        accountController.populateAccountList();
-
-        this.loanHandler = loanHandler;
-
-        this.clientDAO = clientDAO;
-    }
 
     //* For code that does not have access to the client  */
     public ClientClass(ClientDAO clientDAO, String name, int id) {
@@ -39,13 +27,10 @@ public class ClientClass {
         this.clientDAO = clientDAO;
     }
 
-    //TODO: Fix the dependancy circulation (Dettach the account cotroller and loan handler ref ?s\)
-    public void setUpControllers() {
-        this.accountController = new AccountController(this, new AccountDAO());
-
-        accountController.populateAccountList();
-
-        this.loanHandler = new LoanHandler(this);
+    //* We don't put these snippets into the constructor as a mean to be able to unit test
+    public void setUpControllers(AccountController accountController, LoanHandler loanHandler) {
+        this.accountController = accountController;
+        this.loanHandler = loanHandler;
     }
 
     public void changeName(String newName) {

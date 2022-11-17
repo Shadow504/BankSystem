@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import bank.account.AccountController;
 import bank.account.AccountDAO;
 import bank.account.BankAccount;
 import bank.account.console.AccountConsole;
+import bank.account.console.AccountController;
 import bank.client.ClientClass;
 
 public class AccountControllerTest {

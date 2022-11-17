@@ -14,7 +14,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
 
 import bank.account.BankAccount;
@@ -111,7 +110,7 @@ public class LoanHandler {
 
     private Timestamp calculateDeadline() {
         Timestamp currTime = new Timestamp(new Date().getTime());
-
+        
         Timestamp deadline = addDays(currTime, defaultDeadlineGap);
 
         return deadline;

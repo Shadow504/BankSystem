@@ -3,8 +3,8 @@ package bank.client;
 import java.util.Map;
 import java.util.Scanner;
 
-import bank.account.AccountController;
 import bank.account.BankAccount;
+import bank.account.console.AccountController;
 
 public class ClientConsole {
     static Scanner input = new Scanner(System.in);
@@ -63,7 +63,7 @@ public class ClientConsole {
                         break;
                     case "3":
                         logInAccountOptions(currController);
-    
+
                         printClientConsole(client.id);
                         break;
 

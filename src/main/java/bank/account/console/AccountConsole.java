@@ -25,7 +25,6 @@ public class AccountConsole {
 
     //* Composition instead of inheritance (More flexible) */
     // Does not immediately print as the client can still be logging in
-    //* Pass in the AccountController instance and store it as fields are not referenced, but instances are  */
     public AccountConsole(ClientClass client, AccountDAO accountDAO) {
 
         consoleActions = new ConsoleActions(client, accountDAO);

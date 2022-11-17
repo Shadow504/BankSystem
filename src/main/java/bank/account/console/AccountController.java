@@ -1,15 +1,16 @@
-package bank.account;
+package bank.account.console;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import bank.account.console.AccountConsole;
+import bank.account.AccountDAO;
+import bank.account.BankAccount;
 import bank.client.ClientClass;
 
 //* Handles the accounts for a single client */
 public class AccountController {
-    //ACcount lists
+    //Account lists
     //The key is the BankAccount's id
     public Map<Integer, BankAccount> accountList = new HashMap<>();
 
@@ -52,6 +53,15 @@ public class AccountController {
 
     }
 
+    //* Shared methods for Login and Signin as they both enter a new account, not applicable to LogInRecentAccount */
+    private void sharedEnterAccountMethods(BankAccount account) {
+        currentAccount = account;
+
+        accountDAO.updateRecentLoggedInAccount(currentClient.id, account.id);
+
+        currConsole.beginAccountActions();
+    }
+
     public BankAccount createAccount() {
         try { 
             // Retrieve the inputed names and password
@@ -61,18 +71,13 @@ public class AccountController {
             String name = userAndPass[0];
             String password = userAndPass[1];
 
-            System.out.println(currentClient.id);
             int account_id  = accountDAO.insertAccount(currentClient.id, userAndPass[0], userAndPass[1]);
 
             BankAccount account = new BankAccount(accountDAO, account_id, currentClient.id, name, password, 0);
 
             accountList.put(account_id, account);
 
-            currentAccount = account;
-
-            accountDAO.updateRecentLoggedInAccount(currentClient.id, account_id);
-
-            currConsole.beginAccountActions();
+            sharedEnterAccountMethods(account);
 
             return account;
  
@@ -88,11 +93,7 @@ public class AccountController {
 
             int accountId = currConsole.beginLoginSession();
 
-            currentAccount = accountList.get(accountId);
-
-            accountDAO.updateRecentLoggedInAccount(currentClient.id, accountId);
-
-            currConsole.beginAccountActions();
+            sharedEnterAccountMethods(accountList.get(accountId));
 
         } catch (Exception e) {
             e.printStackTrace();
